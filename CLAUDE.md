@@ -45,9 +45,13 @@
 | 3. E2E 리뷰/리팩토링 | 완료 | 진행 예정 |
 | 4. AI 활용 QA 도구 | 완료, 프로토타입 실행 확인 | 진행 예정 |
 
-## 아직 결정되지 않은 것 (다시 묻지 말고, 확인 후 진행)
-- GitHub 원격 저장소 생성 및 push 여부: 계정 연동/공개 게시가 걸린 외부 작업이라 사용자 확인 필요.
-  로컬 git 저장소(`submission/.git`)는 이미 초기화 및 커밋되어 있음.
+## GitHub 저장소 (2026-09-05 확정)
+- 계정: `YeongjunLim`, 저장소명: `woowahan-qa-assignment`, **Public**
+- 이 머신엔 `gh` CLI가 없어 저장소는 사용자가 GitHub 웹에서 직접 생성(빈 저장소, README/gitignore 미초기화) → Claude가 `git push` (Git Credential Manager가 브라우저 로그인 팝업 처리)
+- GitHub Actions는 **문제2(pytest TC-01~TC-25)만** 대상 — `.github/workflows/problem2-tests.yml`, `problem2-bmart-stock-api/**` 변경 시에만 트리거
+- 문제4 프로토타입은 "테스트 스위트가 아니라 데모 스크립트"라는 이유로 CI 스모크테스트 추가하지 않기로 사용자와 확정
+- 문제1(서술)·문제3(Kotlin/Android, 에뮬레이터 필요)은 CI 대상 아님
+- README 상단에 Actions 배지 추가 완료 (최상위 README.md, problem2 README.md)
 
 ## 파일 구조 참고
 ```

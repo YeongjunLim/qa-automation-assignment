@@ -1,5 +1,7 @@
 # 문제2. B마트 재고 API 테스트 자동화 구현
 
+[![Problem2 Tests](https://github.com/YeongjunLim/woowahan-qa-assignment/actions/workflows/problem2-tests.yml/badge.svg)](https://github.com/YeongjunLim/woowahan-qa-assignment/actions/workflows/problem2-tests.yml)
+
 ## 실행 방법
 
 ```bash
