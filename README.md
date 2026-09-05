@@ -58,7 +58,7 @@ python flaky_triage.py sample_failures.json
 |---|---|---|---|
 | 1. 테스트 자동화 전략 | 서술 | - | 자동화 범위 판단 기준, 테스트 피라미드 배분, ROI 기준, CI/CD 통합, Flaky 대응 정책 |
 | 2. B마트 재고 API | 코드 | Python (Flask + pytest) | 상태전이·경계값·동등분할·결정테이블 4개 설계기법 기반 TC-01~TC-25(25개, 동시성 3개 포함), 전부 통과 |
-| 3. E2E 리뷰/리팩토링 | 코드 | Kotlin (UIAutomator) | 문제점 분석(REVIEW.md) + Page Object 기반 리팩토링 코드 |
+| 3. E2E 리뷰/리팩토링 | 코드 | Kotlin (UIAutomator) | 핵심 문제 5개로 압축한 분석(REVIEW.md) + Page Object 기반 리팩토링 코드 |
 | 4. AI 활용 QA 도구 | 코드+설계 | Python | "Flaky Triage Assistant" 설계 + 실행 가능한 프로토타입(규칙 기반 폴백 + LLM 모드) |
 
 ## AI 도구 활용 내역
