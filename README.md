@@ -4,24 +4,31 @@
 
 ```
 submission/
-├── README.md                          # (본 파일) 전체 개요, 실행 방법, AI 활용 내역
+├── CLAUDE.md                           # 작업 메모리 — 4문제를 풀며 계속 지킨 원칙/결정 기록
+├── README.md                           # (본 파일) 전체 개요, 실행 방법, AI 활용 내역
 ├── problem1-test-strategy/
-│   └── README.md                      # 문제1: 테스트 자동화 전략 설계 (서술)
+│   ├── README.md                       # 문제1: 테스트 자동화 전략 설계 (서술, 최종 답변)
+│   └── PROCESS.md                      # 사용자와 함께 풀어나간 과정
 ├── problem2-bmart-stock-api/          # 문제2: B마트 재고 API 테스트 자동화 (Python/Flask/pytest)
 │   ├── README.md
+│   ├── PROCESS.md
 │   ├── requirements.txt
 │   ├── src/mock_server.py
 │   └── tests/
 ├── problem3-e2e-refactor/             # 문제3: E2E 코드 리뷰 및 리팩토링 (Kotlin/UIAutomator)
 │   ├── README.md
 │   ├── REVIEW.md
+│   ├── PROCESS.md
 │   └── src/
 └── problem4-ai-qa-tool/               # 문제4: AI 기반 QA 자동화 도구 제안 + 프로토타입 (Python)
     ├── README.md
+    ├── PROCESS.md
     └── prototype/
 ```
 
-각 문제 폴더의 README에 상세 설계 의도와 실행 방법이 있습니다. 빠른 실행은 아래를 참고하세요.
+각 문제 폴더의 `README.md`는 **최종 산출물**(설계 의도·실행 방법)이고, `PROCESS.md`는 **지원자와 AI가
+함께 문제를 풀어나간 논의 과정**을 담고 있습니다 — AI 활용 방식을 투명하게 보여드리기 위해 최종
+결과물과 별도로 남겼습니다. 빠른 실행은 아래를 참고하세요.
 
 ## 빠른 실행
 
