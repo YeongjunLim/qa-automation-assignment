@@ -1,0 +1,494 @@
+<title>TestLedger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#F5F6F8; --surface:#FFFFFF; --surface-2:#ECEFF3; --surface-3:#E3E7EC;
+    --ink:#171B21; --ink-muted:#5B6572; --ink-faint:#8890999;
+    --border:#DFE3E8; --border-strong:#C7CDD5;
+    --accent:#0B6E8F; --accent-ink:#FFFFFF; --accent-soft:#E4F1F5; --accent-soft-border:#C4E1EA;
+    --good:#2F9E4F; --good-soft:#E5F5E9;
+    --warn:#B57A15; --warn-soft:#FBF0DC;
+    --crit:#C6423A; --crit-soft:#FBE7E5;
+    --tag-state:#7B5BC0; --tag-state-soft:#EEE9F9;
+    --tag-bva:#B14D71; --tag-bva-soft:#F8E9EE;
+    --tag-ep:#6C7A2E; --tag-ep-soft:#EEF1DF;
+    --tag-dt:#4A63C4; --tag-dt-soft:#E7EAFB;
+    --shadow: 0 1px 2px rgba(23,27,33,.04), 0 8px 24px -12px rgba(23,27,33,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1216; --surface:#161B21; --surface-2:#1C222A; --surface-3:#242B34;
+      --ink:#E7E9ED; --ink-muted:#96A0AB; --ink-faint:#6A7480;
+      --border:#2A3139; --border-strong:#3A4552;
+      --accent:#4FC1E0; --accent-ink:#08202A; --accent-soft:rgba(79,193,224,.14); --accent-soft-border:rgba(79,193,224,.32);
+      --good:#49C171; --good-soft:rgba(73,193,113,.14);
+      --warn:#E3AC44; --warn-soft:rgba(227,172,68,.14);
+      --crit:#E86C63; --crit-soft:rgba(232,108,99,.14);
+      --tag-state:#A98EE0; --tag-state-soft:rgba(169,142,224,.16);
+      --tag-bva:#E08AA6; --tag-bva-soft:rgba(224,138,166,.16);
+      --tag-ep:#B9C468; --tag-ep-soft:rgba(185,196,104,.16);
+      --tag-dt:#8FA0EE; --tag-dt-soft:rgba(143,160,238,.16);
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1216; --surface:#161B21; --surface-2:#1C222A; --surface-3:#242B34;
+    --ink:#E7E9ED; --ink-muted:#96A0AB; --ink-faint:#6A7480;
+    --border:#2A3139; --border-strong:#3A4552;
+    --accent:#4FC1E0; --accent-ink:#08202A; --accent-soft:rgba(79,193,224,.14); --accent-soft-border:rgba(79,193,224,.32);
+    --good:#49C171; --good-soft:rgba(73,193,113,.14);
+    --warn:#E3AC44; --warn-soft:rgba(227,172,68,.14);
+    --crit:#E86C63; --crit-soft:rgba(232,108,99,.14);
+    --tag-state:#A98EE0; --tag-state-soft:rgba(169,142,224,.16);
+    --tag-bva:#E08AA6; --tag-bva-soft:rgba(224,138,166,.16);
+    --tag-ep:#B9C468; --tag-ep-soft:rgba(185,196,104,.16);
+    --tag-dt:#8FA0EE; --tag-dt-soft:rgba(143,160,238,.16);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:"IBM Plex Sans",system-ui,sans-serif; text-wrap:balance; margin:0;}
+  code, .mono, .num{font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-variant-numeric:tabular-nums;}
+  p{margin:0; color:var(--ink-muted); line-height:1.6;}
+  a{color:inherit;}
+  ::selection{background:var(--accent-soft);}
+
+  .app{display:grid; grid-template-columns:236px 1fr; min-height:600px;}
+
+  /* ---- Sidebar ---- */
+  .rail{background:var(--surface-2); border-right:1px solid var(--border); padding:20px 14px; display:flex; flex-direction:column; gap:22px;}
+  .brand{display:flex; align-items:center; gap:9px; padding:0 6px;}
+  .brand-mark{width:22px; height:22px; border-radius:5px; background:linear-gradient(155deg,var(--accent),var(--tag-dt)); flex:none;}
+  .brand-name{font-weight:700; font-size:15px; letter-spacing:-0.01em;}
+
+  .svc-switch{display:flex; flex-direction:column; gap:4px;}
+  .svc-label{font-size:10.5px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; padding:0 8px; margin-bottom:2px;}
+  .svc-item{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 8px; border-radius:7px; font-size:13px; cursor:default;}
+  .svc-item.active{background:var(--surface); box-shadow:var(--shadow); font-weight:600;}
+  .svc-item .dim{color:var(--ink-faint); font-size:11px;}
+  .svc-item.ghost{color:var(--ink-faint); border:1px dashed var(--border-strong); cursor:pointer;}
+  .svc-item.ghost:hover{border-color:var(--accent); color:var(--accent);}
+
+  nav.tabs{display:flex; flex-direction:column; gap:2px;}
+  .tab-btn{all:unset; display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:7px; font-size:13.5px; color:var(--ink-muted); cursor:pointer;}
+  .tab-btn svg{width:16px; height:16px; flex:none; opacity:.85;}
+  .tab-btn:hover{background:var(--surface-3); color:var(--ink);}
+  .tab-btn.active{background:var(--accent-soft); color:var(--accent); font-weight:600;}
+  .tab-btn.active svg{opacity:1;}
+
+  .rail-foot{margin-top:auto; padding:10px 8px; border-top:1px solid var(--border); font-size:11px; color:var(--ink-faint); line-height:1.6;}
+
+  /* ---- Main ---- */
+  main{padding:28px 34px 60px; max-width:1180px; width:100%;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .view-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+  .view-head h1{font-size:21px; letter-spacing:-0.01em;}
+  .view-sub{font-size:13px; color:var(--ink-muted); margin-top:4px;}
+  .eyebrow{font-size:11px; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;}
+
+  /* stat tiles */
+  .tiles{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:26px;}
+  .tile{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; box-shadow:var(--shadow);}
+  .tile .t-label{font-size:11.5px; color:var(--ink-muted); margin-bottom:8px;}
+  .tile .t-value{font-size:24px; font-weight:700; letter-spacing:-0.01em;}
+  .tile .t-value .unit{font-size:13px; font-weight:500; color:var(--ink-muted); margin-left:3px;}
+  .tile .t-delta{font-size:11.5px; margin-top:6px; color:var(--good);}
+
+  .spark{display:flex; align-items:flex-end; gap:3px; height:34px; margin-top:10px;}
+  .spark i{flex:1; background:var(--accent-soft); border-radius:2px 2px 0 0;}
+  .spark i.full{background:var(--good);}
+
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); margin-bottom:22px; overflow:hidden;}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; padding:13px 18px; border-bottom:1px solid var(--border);}
+  .panel-head h3{font-size:13.5px; font-weight:600;}
+  .panel-body{padding:4px 0;}
+
+  .ledger{display:flex; flex-direction:column;}
+  .ledger-row{display:grid; grid-template-columns:78px 1fr auto; gap:14px; padding:11px 18px; align-items:baseline; border-bottom:1px solid var(--border);}
+  .ledger-row:last-child{border-bottom:none;}
+  .ledger-row .hash{color:var(--accent); font-size:12px;}
+  .ledger-row .msg{font-size:13px;}
+  .ledger-row .ts{color:var(--ink-faint); font-size:11.5px; white-space:nowrap;}
+
+  .chip{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; line-height:1.5;}
+  .chip.good{background:var(--good-soft); color:var(--good);}
+  .chip.warn{background:var(--warn-soft); color:var(--warn);}
+  .chip.crit{background:var(--crit-soft); color:var(--crit);}
+  .chip.state{background:var(--tag-state-soft); color:var(--tag-state);}
+  .chip.bva{background:var(--tag-bva-soft); color:var(--tag-bva);}
+  .chip.ep{background:var(--tag-ep-soft); color:var(--tag-ep);}
+  .chip.dt{background:var(--tag-dt-soft); color:var(--tag-dt);}
+  .chip.neutral{background:var(--surface-3); color:var(--ink-muted);}
+
+  table{width:100%; border-collapse:collapse; font-size:12.8px;}
+  thead th{text-align:left; font-size:10.5px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; padding:9px 14px; border-bottom:1px solid var(--border); background:var(--surface-2); position:sticky; top:0;}
+  tbody td{padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  .tc-id{color:var(--accent); font-weight:600;}
+  .scrollx{overflow-x:auto;}
+
+  .req-box{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-bottom:20px; font-size:13px;}
+  .req-box ul{margin:8px 0 0; padding-left:18px; color:var(--ink);}
+  .req-box li{margin-bottom:5px;}
+
+  .timeline{display:flex; flex-direction:column; margin-bottom:22px;}
+  .tl-item{display:grid; grid-template-columns:26px 1fr; gap:14px; padding-bottom:20px; position:relative;}
+  .tl-item:not(:last-child)::before{content:""; position:absolute; left:12px; top:24px; bottom:-2px; width:1px; background:var(--border-strong);}
+  .tl-dot{width:25px; height:25px; border-radius:50%; background:var(--surface); border:2px solid var(--border-strong); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--ink-muted); flex:none; z-index:1;}
+  .tl-dot.crit{border-color:var(--crit); color:var(--crit); background:var(--crit-soft);}
+  .tl-dot.good{border-color:var(--good); color:var(--good); background:var(--good-soft);}
+  .tl-dot.pending{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+  .tl-head{display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;}
+  .tl-title{font-weight:600; font-size:13.5px;}
+  .tl-body{font-size:12.8px; color:var(--ink-muted); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:11px 13px;}
+  .tl-body ul{margin:6px 0 0; padding-left:16px;}
+  .tl-body li{margin-bottom:4px;}
+
+  .fix-card{display:grid; grid-template-columns:1fr; gap:16px;}
+  .fix-meta{display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap;}
+  .fix-meta .file{font-size:13px; font-weight:600;}
+  .diff{background:var(--surface-2); border:1px solid var(--border); border-radius:8px; overflow:hidden; font-size:12.5px;}
+  .diff .line{display:flex; padding:6px 14px; gap:12px; white-space:pre;}
+  .diff .line.del{background:var(--crit-soft); color:var(--crit);}
+  .diff .line.add{background:var(--good-soft); color:var(--good);}
+  .diff .line.ctx{color:var(--ink-muted);}
+  .diff .sign{width:12px; flex:none; font-weight:700;}
+  .evidence{font-size:12.8px; color:var(--ink-muted); background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:11px 13px; margin:12px 0 16px;}
+  .btnrow{display:flex; gap:10px; align-items:center;}
+  button{all:unset; font-family:inherit; cursor:pointer; font-size:13px; font-weight:600; padding:9px 16px; border-radius:7px;}
+  .btn-primary{background:var(--accent); color:var(--accent-ink);}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-ghost{border:1px solid var(--border-strong); color:var(--ink-muted);}
+  .btn-ghost:hover{color:var(--ink); border-color:var(--ink-muted);}
+  .toast{display:none; align-items:center; gap:8px; font-size:12.5px; color:var(--good); margin-left:4px;}
+  .toast.show{display:inline-flex;}
+  .note{font-size:11.8px; color:var(--ink-faint); margin-top:14px;}
+
+  .footline{font-size:11.5px; color:var(--ink-faint); margin-top:30px; padding-top:16px; border-top:1px solid var(--border);}
+
+  @media (max-width: 760px){
+    .app{grid-template-columns:1fr;}
+    .rail{flex-direction:row; overflow-x:auto; align-items:center;}
+    .tiles{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">TestLedger</div>
+    </div>
+
+    <div class="svc-switch">
+      <div class="svc-label">등록된 서비스</div>
+      <div class="svc-item active"><span>B마트 재고 API</span><span class="dim">25 TC</span></div>
+      <div class="svc-item"><span>배민 사장님 · 주문현황</span><span class="dim">0 TC</span></div>
+      <div class="svc-item ghost">+ 서비스 등록</div>
+    </div>
+
+    <nav class="tabs" id="tabnav">
+      <button class="tab-btn active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        대시보드
+      </button>
+      <button class="tab-btn" data-view="design">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 17h5"/></svg>
+        TC 설계 · 작성
+      </button>
+      <button class="tab-btn" data-view="ci">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
+        CI 실패 분석
+      </button>
+      <button class="tab-btn" data-view="fix">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a3 3 0 0 0-4.24 4.24L4 17v3h3l6.46-6.46a3 3 0 0 0 4.24-4.24l-2.3 2.3-2-2Z"/></svg>
+        수정 제안
+      </button>
+      <button class="tab-btn" data-view="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l4 2"/></svg>
+        자산 이력
+      </button>
+    </nav>
+
+    <div class="rail-foot">우아한형제들 QA 사전과제 · 문제4<br>AI 기반 테스트 자산화 플랫폼 (설계 목업)</div>
+  </aside>
+
+  <main>
+
+    <!-- ================= DASHBOARD ================= -->
+    <section class="view active" id="view-dashboard">
+      <div class="view-head">
+        <div>
+          <div class="eyebrow">B마트 재고 API</div>
+          <h1>대시보드</h1>
+          <div class="view-sub">등록일 2026-09-03 · 담당 QA 1명 · 자동화 계층 UI/API/E2E</div>
+        </div>
+        <span class="chip good">● CI 정상</span>
+      </div>
+
+      <div class="tiles">
+        <div class="tile">
+          <div class="t-label">TC 자산</div>
+          <div class="t-value">25<span class="unit">건</span></div>
+          <div class="t-delta">상태전이·경계값·동등분할·결정테이블 4기법</div>
+        </div>
+        <div class="tile">
+          <div class="t-label">최근 CI 실행</div>
+          <div class="t-value">25<span class="unit">/ 25 통과</span></div>
+          <div class="spark" id="spark"></div>
+        </div>
+        <div class="tile">
+          <div class="t-label">Flaky 후보</div>
+          <div class="t-value">0<span class="unit">건</span></div>
+          <div class="t-delta">최근 10회 실행 기준</div>
+        </div>
+        <div class="tile">
+          <div class="t-label">수정 제안 대기</div>
+          <div class="t-value">1<span class="unit">건</span></div>
+          <div class="t-delta" style="color:var(--warn)">TIMING_ISSUE · 승인 필요</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>최근 활동</h3><span class="chip neutral">실시간 로그</span></div>
+        <div class="panel-body">
+          <div class="ledger">
+            <div class="ledger-row"><span class="hash mono">a1e9f02</span><span class="msg">CI #128 실행 완료 — TC-01~TC-25 전체 통과</span><span class="ts mono">09-05 09:14</span></div>
+            <div class="ledger-row"><span class="hash mono">f7c3d81</span><span class="msg">신규 TC 18건 승인 대기 — 쿠폰 적용 기능 v0.2 (Critic 2차 반려 · 6건 수정중)</span><span class="ts mono">09-05 11:02</span></div>
+            <div class="ledger-row"><span class="hash mono">9b0e224</span><span class="msg">TIMING_ISSUE 자동 수정 제안 생성 — OrderFlowTest.kt</span><span class="ts mono">09-04 22:47</span></div>
+            <div class="ledger-row"><span class="hash mono">55d1a3c</span><span class="msg">TC 자산 v1.0 등록 — 25건 (Mock 서버 기반 검증 완료)</span><span class="ts mono">09-03 16:20</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TC 설계 · 작성 ================= -->
+    <section class="view" id="view-design">
+      <div class="view-head">
+        <div>
+          <div class="eyebrow">쿠폰 적용 기능</div>
+          <h1>TC 설계 · 작성</h1>
+          <div class="view-sub">신규 요구사항 → Generator/Critic 서브에이전트 루프로 초안 생성 중 (v2, 검토 진행 중)</div>
+        </div>
+      </div>
+
+      <div class="req-box">
+        <strong>입력된 요구사항</strong>
+        <ul>
+          <li>쿠폰은 발급(ISSUED) → 사용가능(AVAILABLE) → 사용완료(USED) 상태를 가진다. 유효기간 경과 시 AVAILABLE → EXPIRED로 전환된다.</li>
+          <li>이미 USED이거나 EXPIRED인 쿠폰은 다시 사용할 수 없다.</li>
+          <li>쿠폰마다 최소 주문금액 조건이 있다 (미만이면 적용 불가, 같으면 적용 가능).</li>
+          <li>존재하지 않는 쿠폰 코드를 입력하면 에러를 반환한다. 한 주문에는 쿠폰을 최대 1개만 적용할 수 있다.</li>
+        </ul>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot good">1</div>
+          <div>
+            <div class="tl-head"><span class="tl-title">Generator 초안 v1</span><span class="chip neutral">16건 생성</span></div>
+            <div class="tl-body">상태전이 6 · 경계값분석 3 · 동등분할 2 · 결정테이블 5</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot crit">2</div>
+          <div>
+            <div class="tl-head"><span class="tl-title">Critic 검토</span><span class="chip crit">반려 · 7건</span></div>
+            <div class="tl-body">
+              <ul>
+                <li>결정테이블 2건 입력 컬럼 누락 (재현 불가)</li>
+                <li>동등분할·결정테이블 케이스 중복 (TC-EP-02 ↔ TC-DT-01)</li>
+                <li>예상결과가 모호해 통과/실패 판정 불가한 케이스 1건</li>
+                <li>유효기간 만료 경계값(BVA) 커버리지 누락</li>
+                <li>USED 쿠폰의 오(誤)전환 방지 케이스 누락</li>
+                <li>요구사항에 없는 절차를 임의로 가정한 케이스 1건</li>
+                <li>결정테이블 조건 우선순위가 근거 없이 암묵 설정됨</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot good">3</div>
+          <div>
+            <div class="tl-head"><span class="tl-title">Generator 수정 v2</span><span class="chip neutral">7건 전체 반영</span></div>
+            <div class="tl-body">지적 항목만 정확히 반영, 미지적 케이스는 유지</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending">4</div>
+          <div>
+            <div class="tl-head"><span class="tl-title">Critic 2차 검토</span><span class="chip warn">반려 · 6건 (4건 해소 · 2건 신규 · 1건 미해소)</span></div>
+            <div class="tl-body">수정 과정에서 사전조건·입력이 논리적으로 모순되는 신규 결함을 발견 — 사람 승인 없이 자동 확정되지 않도록 설계된 대로 다시 Generator에게 반려됨.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>테스트케이스 초안 (v2)</h3><span class="chip warn">검토 진행 중</span></div>
+        <div class="panel-body scrollx">
+          <table>
+            <thead><tr><th>TC-ID</th><th>기법</th><th>사전조건</th><th>입력</th><th>예상결과</th></tr></thead>
+            <tbody>
+              <tr><td class="tc-id mono">ST-02</td><td><span class="chip state">상태전이</span></td><td>쿠폰 AVAILABLE, 최소주문금액 충족</td><td>쿠폰 코드로 주문 적용</td><td>AVAILABLE→USED 전환, 할인 반영</td></tr>
+              <tr><td class="tc-id mono">ST-06</td><td><span class="chip state">상태전이</span></td><td>USED 쿠폰의 유효기간 경과</td><td>만료 배치 실행</td><td>USED 유지 (EXPIRED로 오전환 안 됨)</td></tr>
+              <tr><td class="tc-id mono">BVA-02</td><td><span class="chip bva">경계값분석</span></td><td>최소주문금액 10,000원</td><td>주문금액 10,000원(경계)</td><td>경계 일치로 정상 적용</td></tr>
+              <tr><td class="tc-id mono">BVA-04</td><td><span class="chip bva">경계값분석</span></td><td>유효기간 종료일=오늘</td><td>마지막 날 적용</td><td>AVAILABLE 유지, 정상 적용</td></tr>
+              <tr><td class="tc-id mono">BVA-05</td><td><span class="chip bva">경계값분석</span></td><td>유효기간 종료일=어제, 배치 실행됨</td><td>경과 후 첫날 적용 시도</td><td>EXPIRED 전환, 적용 거부</td></tr>
+              <tr><td class="tc-id mono">EP-02</td><td><span class="chip ep">동등분할</span></td><td>형식 유효, DB 미존재 코드</td><td>"ABCD1234" 입력</td><td>존재하지 않는 쿠폰 에러</td></tr>
+              <tr><td class="tc-id mono">EP-03</td><td><span class="chip ep">동등분할</span></td><td>형식 자체가 무효</td><td>빈 값 / 특수문자 입력</td><td>형식 오류 에러 (Critic: 2개 클래스로 분리 필요)</td></tr>
+              <tr><td class="tc-id mono">DT-02</td><td><span class="chip dt">결정테이블</span></td><td>코드 존재, 주문에 쿠폰 기적용</td><td>두 번째 쿠폰 적용 시도</td><td>"이미 적용된 주문" 에러(우선순위 각주 추가)</td></tr>
+              <tr><td class="tc-id mono">DT-05</td><td><span class="chip dt">결정테이블</span></td><td>모든 조건 충족</td><td>쿠폰 적용</td><td>정상 적용, USED 전환 (BVA-02와 중복 지적됨)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p style="font-size:11.8px; color:var(--ink-faint);">* 전체 18개 케이스 중 대표 9건만 표시. 실제 승인 전까지 자산에는 반영되지 않는다.</p>
+    </section>
+
+    <!-- ================= CI 실패 분석 ================= -->
+    <section class="view" id="view-ci">
+      <div class="view-head">
+        <div>
+          <div class="eyebrow">실패 분석 파이프라인 · 수집기 → 정규화 → 분류 → 라우터</div>
+          <h1>CI 실패 분석</h1>
+          <div class="view-sub">최근 실패 4건 (다른 서비스 이력 포함 샘플) · 5개 카테고리로 자동 분류</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body scrollx">
+          <table>
+            <thead><tr><th>테스트</th><th>분류</th><th>신뢰도</th><th>근거</th><th>담당</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="mono">OrderFlowTest.치킨_후라이드_주문시_접수대기_상태로_전환된다</td>
+                <td><span class="chip warn">TIMING_ISSUE</span></td>
+                <td class="mono">80%</td>
+                <td>TimeoutException 발생 + 재시도 시 통과함</td>
+                <td>QA</td>
+              </tr>
+              <tr>
+                <td class="mono">test_two_near_simultaneous_orders_on_last_unit_only_one_succeeds</td>
+                <td><span class="chip crit">REAL_BUG</span></td>
+                <td class="mono">85%</td>
+                <td>최근 10회 중 10회 실패, 재시도해도 미통과 — 일관된 실패</td>
+                <td>DEV</td>
+              </tr>
+              <tr>
+                <td class="mono">StockApiContractTest.재고_조회_스테이징_연동</td>
+                <td><span class="chip dt">ENV_ISSUE</span></td>
+                <td class="mono">75%</td>
+                <td>ConnectionError — 네트워크/연결 오류 문구 확인됨</td>
+                <td>INFRA</td>
+              </tr>
+              <tr>
+                <td class="mono">UserProfileApiTest.닉네임_변경_후_조회시_반영</td>
+                <td><span class="chip state">DATA_ISSUE</span></td>
+                <td class="mono">55%</td>
+                <td>성공/실패가 실행마다 뒤바뀜 — 공유 픽스처 충돌 의심</td>
+                <td>QA</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p style="font-size:11.8px; color:var(--ink-faint);">분류 로직은 problem4-ai-qa-tool/prototype/flaky_triage.py로 실제 실행 검증됨 (규칙 기반 폴백 + LLM 모드).</p>
+    </section>
+
+    <!-- ================= 수정 제안 ================= -->
+    <section class="view" id="view-fix">
+      <div class="view-head">
+        <div>
+          <div class="eyebrow">OrderFlowTest.kt · TIMING_ISSUE</div>
+          <h1>수정 제안</h1>
+          <div class="view-sub">분류 라벨에서 멈추지 않고, 구체적인 대체 코드까지 생성한다</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body" style="padding:18px;">
+          <div class="fix-meta">
+            <span class="file mono">OrderFlowTest.kt</span>
+            <span class="chip warn">TIMING_ISSUE</span>
+            <span class="chip neutral">신뢰도 80%</span>
+          </div>
+          <div class="evidence">근거: 고정 대기(Thread.sleep) 직후 상태 텍스트를 찾지 못해 TimeoutException 발생, 재시도 시에는 통과함 — 대기 전략 미흡으로 진단.</div>
+
+          <div class="diff">
+            <div class="line del"><span class="sign">−</span>Thread.sleep(5000)</div>
+            <div class="line del"><span class="sign">−</span>val statusText = device.wait(Until.findObject(By.textContains("접수 대기")), 3000)</div>
+            <div class="line add"><span class="sign">+</span>val statusText = UiWaitUtils.waitForExactText(device, "접수 대기", Timeouts.UI_TRANSITION_MS)</div>
+            <div class="line ctx"><span class="sign"> </span>Assert.assertNotNull(statusText)</div>
+          </div>
+
+          <div class="btnrow" style="margin-top:16px;">
+            <button class="btn-primary" onclick="applyFix(this)">수정안 적용</button>
+            <button class="btn-ghost">반려</button>
+            <span class="toast" id="fixToast">✓ 자산 이력에 기록되었습니다 (승인자: QA)</span>
+          </div>
+          <div class="note">AI가 제안한 수정안입니다. 자동 적용되지 않으며, 사람의 승인 후에만 TC 자산에 반영됩니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 자산 이력 ================= -->
+    <section class="view" id="view-history">
+      <div class="view-head">
+        <div>
+          <div class="eyebrow">자산 관리</div>
+          <h1>자산 이력</h1>
+          <div class="view-sub">TC와 자동화 스크립트는 요구사항ID와 연결된 채 버전으로 관리된다</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body">
+          <div class="ledger">
+            <div class="ledger-row"><span class="hash mono">c40a771</span><span class="msg">OrderFlowTest.kt 수정안 적용 대기 — TIMING_ISSUE (Thread.sleep → 폴링 대기)</span><span class="ts mono">09-05 14:02</span></div>
+            <div class="ledger-row"><span class="hash mono">f7c3d81</span><span class="msg">쿠폰 적용 기능 TC v0.2 — Critic 2차 반려(6건), Generator 3차 수정 대기</span><span class="ts mono">09-05 11:02</span></div>
+            <div class="ledger-row"><span class="hash mono">e2b9910</span><span class="msg">쿠폰 적용 기능 TC v0.1 — Generator 초안 16건 생성</span><span class="ts mono">09-05 10:41</span></div>
+            <div class="ledger-row"><span class="hash mono">9b0e224</span><span class="msg">CI #127 실행 중 OrderFlowTest 실패 감지 → TIMING_ISSUE 분류</span><span class="ts mono">09-04 22:47</span></div>
+            <div class="ledger-row"><span class="hash mono">55d1a3c</span><span class="msg">B마트 재고 API TC 자산 v1.0 등록 — 25건 (TC-01~TC-25)</span><span class="ts mono">09-03 16:20</span></div>
+            <div class="ledger-row"><span class="hash mono">1a0f3e4</span><span class="msg">B마트 재고 API 서비스 등록</span><span class="ts mono">09-03 15:58</span></div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:11.8px; color:var(--ink-faint);">모든 변경은 사람의 승인 시점에만 커밋되며, AI가 생성한 초안 상태는 별도로 구분해 보관한다.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.tab-btn');
+  const views = document.querySelectorAll('.view');
+  buttons.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      views.forEach(v=>v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    });
+  });
+
+  function applyFix(btn){
+    btn.textContent = '적용됨';
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    document.getElementById('fixToast').classList.add('show');
+  }
+
+  // sparkline: last 10 CI runs, all passing (25/25) — flat full bars with slight natural variance in height for texture
+  const spark = document.getElementById('spark');
+  const heights = [26,28,25,30,27,29,26,31,28,34];
+  heights.forEach(h=>{
+    const bar = document.createElement('i');
+    bar.className = 'full';
+    bar.style.height = h+'px';
+    spark.appendChild(bar);
+  });
+</script>
