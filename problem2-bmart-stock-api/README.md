@@ -28,13 +28,27 @@ pytest tests/ -v -s
 
 에러는 모두 `{"error": "<CODE>", "message": "..."}` 형태로 통일했다.
 
+## 테스트 케이스 설계
+
+테스트는 감으로 나열하지 않고 **블랙박스 테스트 설계기법**(상태 전이/경계값 분석/동등 분할/결정 테이블)으로 도출했다. 기법별 설계 근거와 다이어그램은 [TEST_DESIGN.md](TEST_DESIGN.md), 케이스별 입력값·예상결과 명세는 [TEST_CASES.md](TEST_CASES.md) 참고. 전체 **25개 테스트, TC-01~TC-25**로 ID를 부여했고 코드 주석과 1:1 대응한다.
+
+과제 요구사항 대비 매핑:
+
+| 요구사항 | 해당 TC |
+|---|---|
+| 정상 케이스 | TC-01, TC-02, TC-03, TC-04, TC-10, TC-19 |
+| 재고 복구 | TC-05, TC-06, TC-18 |
+| 품절 전환 | TC-07, TC-08, TC-09, TC-17, TC-20 |
+| 동시성(재고 1개, 수십 ms 간격 도달) | **TC-23** (요구사항 시나리오 그 자체), TC-24·TC-25(보강) |
+
 ## 테스트 코드 구조
 
 ```
 tests/
-  conftest.py               # fixture, 서버 기동/종료, 검증 헬퍼
-  test_stock_and_orders.py  # 정상/재고복구/품절전환 등 15개 케이스
-  test_concurrency.py       # 동시 주문 3개 케이스 (last-unit race condition)
+  conftest.py                    # fixture, 서버 기동/종료, 검증 헬퍼
+  test_stock_and_orders.py       # 정상/재고복구/품절전환/경계값/상태전이 (TC-01~TC-18)
+  test_admin_update_ordering.py  # 결정 테이블: 운영자 수정 vs 주문 처리 순서 (TC-19~TC-22)
+  test_concurrency.py            # 동시 주문 3개 케이스 (TC-23~TC-25)
 ```
 
 ### fixture 설계

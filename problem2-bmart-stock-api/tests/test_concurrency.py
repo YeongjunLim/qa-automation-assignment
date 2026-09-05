@@ -1,22 +1,24 @@
 """
 동시성 테스트 — '재고 1개 남은 상품에 두 요청이 수십 ms 간격으로 도달' 시나리오
 
+TC-23~TC-25 (ID/설계기법 상세는 ../TEST_DESIGN.md 5장, ../TEST_CASES.md 참고)
+
 설계 의도
-    1. test_two_near_simultaneous_orders_on_last_unit_*
+    1. test_two_near_simultaneous_orders_on_last_unit_* (TC-23, 과제가 명시한 시나리오 그 자체)
        threading.Barrier로 두 스레드를 동시에 출발시켜, 실제 두 고객(A, B)이 각자의 클라이언트에서
        "거의 동시에" 결제 버튼을 누른 상황을 재현한다. 두 요청이 서버에 도달하는 실제 시간 간격을
        측정해 로그로 남기되(수십 ms 수준이 되는지는 OS 스케줄링에 달려 있어 하드 어서션은 하지 않는다 —
        타이밍을 하드 어서션하면 그 자체가 flaky의 원인이 되기 때문), 도달 순서와 무관하게
        "정확히 1건 성공 + 나머지는 품절"이라는 비즈니스 불변식(invariant)만 엄격히 검증한다.
 
-    2. test_lock_serializes_requests_even_under_artificial_delay
+    2. test_lock_serializes_requests_even_under_artificial_delay (TC-24)
        Barrier만으로는 두 요청이 서버의 critical section 안에서 실제로 겹치는지 보장할 수 없다
        (스케줄링이 빨라 겹치지 않고 순차 처리될 수도 있음). 그래서 mock_server의 디버그 훅
        (_artificialDelaySeconds)으로 lock 내부에서 일부러 sleep을 주입해, 두 요청이 반드시
        critical section 안에서 경합하도록 강제한 뒤에도 정합성이 깨지지 않는지 검증한다.
        => (1)이 '현실적 타이밍 재현', (2)가 '락 정합성의 결정적 증명' 역할을 분담한다.
 
-    3. test_no_oversell_under_high_concurrency
+    3. test_no_oversell_under_high_concurrency (TC-25)
        요청 2건이 아니라 10건을 동시에 쏘아도 정확히 1건만 성공하는지 확인해, 동시성 정도가
        늘어나도 이중 판매(oversell)가 발생하지 않음을 추가로 보증한다.
 """
