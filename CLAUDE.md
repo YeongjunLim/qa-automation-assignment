@@ -45,9 +45,10 @@
 | 3. E2E 리뷰/리팩토링 | 완료 | 진행 예정 |
 | 4. AI 활용 QA 도구 | 완료, 프로토타입 실행 확인 | 진행 예정 |
 
-## GitHub 저장소 (2026-09-05 확정)
+## GitHub 저장소 (2026-09-05 확정, push는 4문제 완료 후로 보류)
 - 계정: `YeongjunLim`, 저장소명: `woowahan-qa-assignment`, **Public**
 - 이 머신엔 `gh` CLI가 없어 저장소는 사용자가 GitHub 웹에서 직접 생성(빈 저장소, README/gitignore 미초기화) → Claude가 `git push` (Git Credential Manager가 브라우저 로그인 팝업 처리)
+- **사용자가 "저장소 생성은 4문제 다 끝나고 하자"고 결정함 (2026-09-05)** — 지금 당장 저장소 생성/push를 재촉하지 말 것. 로컬에는 이미 CI 워크플로우까지 커밋되어 있어 push만 하면 되는 상태.
 - GitHub Actions는 **문제2(pytest TC-01~TC-25)만** 대상 — `.github/workflows/problem2-tests.yml`, `problem2-bmart-stock-api/**` 변경 시에만 트리거
 - 문제4 프로토타입은 "테스트 스위트가 아니라 데모 스크립트"라는 이유로 CI 스모크테스트 추가하지 않기로 사용자와 확정
 - 문제1(서술)·문제3(Kotlin/Android, 에뮬레이터 필요)은 CI 대상 아님
