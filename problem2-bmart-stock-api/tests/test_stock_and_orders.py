@@ -1,0 +1,149 @@
+"""
+정상 케이스 / 재고 복구 / 품절 전환 API 자동화 테스트
+
+'재고 처리 규칙' 표(과제 PDF)에 정의된 각 이벤트를 1:1로 테스트 케이스에 매핑했다.
+
+    이벤트                          -> 테스트
+    ------------------------------------------------------------------
+    재고 조회                       -> test_get_stock_returns_current_quantity
+    장바구니 담기(재고 변동 없음)     -> test_reading_stock_repeatedly_has_no_side_effect
+    주문 결제 완료(즉시 차감)         -> test_successful_order_decrements_stock_and_returns_order
+    주문 결제 완료(다건 차감)         -> test_order_with_quantity_greater_than_one
+    주문 취소(재고 즉시 복구)         -> test_cancel_order_restores_stock
+    취소 후 재구매 가능               -> test_after_cancel_another_customer_can_purchase_immediately
+    재고 0 -> 품절 전환               -> test_stock_reaches_zero_becomes_sold_out
+    품절 상품 주문 시도                -> test_ordering_sold_out_product_returns_409
+    재고 부족(요청 수량 > 재고)        -> test_order_quantity_exceeds_stock_returns_409
+    운영자 수동 재고 수정              -> test_admin_can_manually_update_stock
+    잘못된 요청 검증                   -> test_order_with_invalid_quantity_returns_400
+                                        test_get_stock_for_unknown_product_returns_404
+                                        test_order_for_unknown_product_returns_404
+    취소 idempotency                  -> test_cancelling_already_cancelled_order_returns_409
+"""
+from __future__ import annotations
+
+import requests
+
+from conftest import assert_error, assert_stock
+
+
+def test_get_stock_returns_current_quantity(server):
+    resp = requests.get(server.url("/v1/products/chicken-fried-001/stock"))
+    assert resp.status_code == 200
+    assert_stock(resp, expected_stock=10, expected_status="IN_STOCK")
+
+
+def test_reading_stock_repeatedly_has_no_side_effect(server):
+    """장바구니 담기는 '조회'일 뿐이므로, 여러 번 조회해도 재고는 변하지 않아야 한다."""
+    for _ in range(5):
+        resp = requests.get(server.url("/v1/products/snack-honeybutter-002/stock"))
+        assert_stock(resp, expected_stock=3)
+
+
+def test_successful_order_decrements_stock_and_returns_order(server):
+    resp = requests.post(server.url("/v1/orders"), json={"productId": "chicken-fried-001", "quantity": 1})
+    assert resp.status_code == 201
+    order = resp.json()
+    assert order["status"] == "COMPLETED"
+    assert order["productId"] == "chicken-fried-001"
+    assert "orderId" in order and order["orderId"]
+
+    stock_resp = requests.get(server.url("/v1/products/chicken-fried-001/stock"))
+    assert_stock(stock_resp, expected_stock=9, expected_status="IN_STOCK")
+
+
+def test_order_with_quantity_greater_than_one(server):
+    resp = requests.post(server.url("/v1/orders"), json={"productId": "snack-honeybutter-002", "quantity": 2})
+    assert resp.status_code == 201
+
+    stock_resp = requests.get(server.url("/v1/products/snack-honeybutter-002/stock"))
+    assert_stock(stock_resp, expected_stock=1, expected_status="IN_STOCK")
+
+
+def test_cancel_order_restores_stock(server):
+    order_resp = requests.post(server.url("/v1/orders"), json={"productId": "chicken-fried-001", "quantity": 2})
+    order_id = order_resp.json()["orderId"]
+
+    cancel_resp = requests.post(server.url(f"/v1/orders/{order_id}/cancel"))
+    assert cancel_resp.status_code == 200
+    assert cancel_resp.json()["status"] == "CANCELLED"
+
+    stock_resp = requests.get(server.url("/v1/products/chicken-fried-001/stock"))
+    assert_stock(stock_resp, expected_stock=10, expected_status="IN_STOCK")  # 원복
+
+
+def test_after_cancel_another_customer_can_purchase_immediately(last_unit_server):
+    """취소 직후 '다른 고객'이 즉시 구매 가능한 상태로 전환되어야 한다는 비고 요건 검증."""
+    server = last_unit_server
+    order_resp = requests.post(server.url("/v1/orders"), json={"productId": "limited-edition-999", "quantity": 1})
+    order_id = order_resp.json()["orderId"]
+    assert requests.get(server.url("/v1/products/limited-edition-999/stock")).json()["status"] == "SOLD_OUT"
+
+    requests.post(server.url(f"/v1/orders/{order_id}/cancel"))
+
+    # 다른 고객(B)의 신규 주문 시도
+    other_customer_order = requests.post(
+        server.url("/v1/orders"), json={"productId": "limited-edition-999", "quantity": 1}
+    )
+    assert other_customer_order.status_code == 201
+
+
+def test_stock_reaches_zero_becomes_sold_out(last_unit_server):
+    server = last_unit_server
+    requests.post(server.url("/v1/orders"), json={"productId": "limited-edition-999", "quantity": 1})
+
+    stock_resp = requests.get(server.url("/v1/products/limited-edition-999/stock"))
+    assert_stock(stock_resp, expected_stock=0, expected_status="SOLD_OUT")
+
+
+def test_ordering_sold_out_product_returns_409(last_unit_server):
+    server = last_unit_server
+    requests.post(server.url("/v1/orders"), json={"productId": "limited-edition-999", "quantity": 1})
+
+    second_attempt = requests.post(
+        server.url("/v1/orders"), json={"productId": "limited-edition-999", "quantity": 1}
+    )
+    assert_error(second_attempt, expected_http_status=409, expected_error_code="SOLD_OUT")
+
+
+def test_order_quantity_exceeds_stock_returns_409(server):
+    resp = requests.post(server.url("/v1/orders"), json={"productId": "snack-honeybutter-002", "quantity": 100})
+    assert_error(resp, expected_http_status=409, expected_error_code="SOLD_OUT")
+
+
+def test_admin_can_manually_update_stock(server):
+    resp = requests.patch(server.url("/v1/admin/products/chicken-fried-001/stock"), json={"stock": 50})
+    assert resp.status_code == 200
+    assert_stock(resp, expected_stock=50, expected_status="IN_STOCK")
+
+    stock_resp = requests.get(server.url("/v1/products/chicken-fried-001/stock"))
+    assert_stock(stock_resp, expected_stock=50)
+
+
+def test_order_with_invalid_quantity_returns_400(server):
+    resp = requests.post(server.url("/v1/orders"), json={"productId": "chicken-fried-001", "quantity": 0})
+    assert_error(resp, expected_http_status=400, expected_error_code="INVALID_QUANTITY")
+
+
+def test_get_stock_for_unknown_product_returns_404(server):
+    resp = requests.get(server.url("/v1/products/no-such-product/stock"))
+    assert_error(resp, expected_http_status=404, expected_error_code="PRODUCT_NOT_FOUND")
+
+
+def test_order_for_unknown_product_returns_404(server):
+    resp = requests.post(server.url("/v1/orders"), json={"productId": "no-such-product", "quantity": 1})
+    assert_error(resp, expected_http_status=404, expected_error_code="PRODUCT_NOT_FOUND")
+
+
+def test_cancelling_already_cancelled_order_returns_409(server):
+    order_resp = requests.post(server.url("/v1/orders"), json={"productId": "chicken-fried-001", "quantity": 1})
+    order_id = order_resp.json()["orderId"]
+    requests.post(server.url(f"/v1/orders/{order_id}/cancel"))
+
+    second_cancel = requests.post(server.url(f"/v1/orders/{order_id}/cancel"))
+    assert_error(second_cancel, expected_http_status=409, expected_error_code="ALREADY_CANCELLED")
+
+
+def test_cancelling_unknown_order_returns_404(server):
+    resp = requests.post(server.url("/v1/orders/order-does-not-exist/cancel"))
+    assert_error(resp, expected_http_status=404, expected_error_code="ORDER_NOT_FOUND")

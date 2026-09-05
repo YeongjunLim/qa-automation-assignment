@@ -1,0 +1,30 @@
+[
+  {
+    "test_name": "OrderFlowTest.치킨_후라이드_주문시_접수대기_상태로_전환된다",
+    "test_code_snippet": "Thread.sleep(5000)\nval statusText = device.wait(Until.findObject(By.textContains(\"접수 대기\")), 3000)\nAssert.assertNotNull(statusText)",
+    "stack_trace": "java.util.concurrent.TimeoutException: element not visible within 3000ms. selector=UiSelector[TEXT_CONTAINS='접수 대기']\n\tat com.baemin.qa.e2e.support.UiWaitUtils.waitForVisible(UiWaitUtils.kt:41)\n\tat com.baemin.qa.e2e.OrderFlowTest.치킨_후라이드_주문시_접수대기_상태로_전환된다(OrderFlowTest.kt:58)",
+    "recent_history": [true, true, false, true, true, false, true, true, true, false],
+    "retry_passed": true
+  },
+  {
+    "test_name": "test_two_near_simultaneous_orders_on_last_unit_only_one_succeeds",
+    "test_code_snippet": "success_count = sum(1 for r in (resp_a, resp_b) if r.status_code == 201)\nassert success_count == 1",
+    "stack_trace": "AssertionError: 정확히 1건 성공 + 1건 품절이어야 함. 실제: [201, 201]\n\tassert [201, 201] == [201, 409]\n\tat test_concurrency.py:44 in test_two_near_simultaneous_orders_on_last_unit_only_one_succeeds",
+    "recent_history": [false, false, false, false, false, false, false, false, false, false],
+    "retry_passed": false
+  },
+  {
+    "test_name": "StockApiContractTest.재고_조회_스테이징_연동",
+    "test_code_snippet": "resp = requests.get(f'{STAGING_BASE_URL}/v1/products/{pid}/stock', timeout=3)\nassert resp.status_code == 200",
+    "stack_trace": "requests.exceptions.ConnectionError: HTTPConnectionPool(host='staging-api.internal', port=443): Max retries exceeded (Caused by NewConnectionError('Connection refused'))\n\tat test_stock_contract.py:22",
+    "recent_history": [true, true, true, true, false, true, true, true, false, true],
+    "retry_passed": true
+  },
+  {
+    "test_name": "UserProfileApiTest.닉네임_변경_후_조회시_반영",
+    "test_code_snippet": "resp = requests.get(f'/v1/users/{shared_test_user_id}')\nassert resp.json()['nickname'] == '테스트유저'",
+    "stack_trace": "AssertionError: assert '테스트유저_2' == '테스트유저'\n  -  테스트유저\n  +  테스트유저_2\n\tat test_user_profile.py:37",
+    "recent_history": [true, false, true, false, true, false, true, false, true, false],
+    "retry_passed": false
+  }
+]
