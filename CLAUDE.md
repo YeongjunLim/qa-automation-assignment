@@ -49,7 +49,7 @@
 | 4. AI 활용 QA 도구 | 완료 — 아이디어가 6번 바뀐 끝에 "테스트케이스 자산화 플랫폼"으로 수렴, TestLedger 목업 발행 | 완료 (2026-09-05) |
 
 ## GitHub 저장소 (2026-09-05 확정, push는 4문제 완료 후로 보류)
-- 계정: `YeongjunLim`, 저장소명: `woowahan-qa-assignment`, **Public**
+- 계정: `YeongjunLim`, 저장소명: `qa-automation-assignment`, **Public**
 - 이 머신엔 `gh` CLI가 없어 저장소는 사용자가 GitHub 웹에서 직접 생성(빈 저장소, README/gitignore 미초기화) → Claude가 `git push` (Git Credential Manager가 브라우저 로그인 팝업 처리)
 - **사용자가 "저장소 생성은 4문제 다 끝나고 하자"고 결정함 (2026-09-05)** — 지금 당장 저장소 생성/push를 재촉하지 말 것. 로컬에는 이미 CI 워크플로우까지 커밋되어 있어 push만 하면 되는 상태.
 - GitHub Actions는 **문제2(pytest TC-01~TC-25)만** 대상 — `.github/workflows/problem2-tests.yml`, `problem2-bmart-stock-api/**` 변경 시에만 트리거

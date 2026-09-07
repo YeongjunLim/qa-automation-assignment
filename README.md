@@ -1,6 +1,6 @@
 # 우아한형제들 Senior QA Engineer (Test Automation Specialist) 사전과제
 
-[![Problem2 Tests](https://github.com/YeongjunLim/woowahan-qa-assignment/actions/workflows/problem2-tests.yml/badge.svg)](https://github.com/YeongjunLim/woowahan-qa-assignment/actions/workflows/problem2-tests.yml)
+[![Problem2 Tests](https://github.com/YeongjunLim/qa-automation-assignment/actions/workflows/problem2-tests.yml/badge.svg)](https://github.com/YeongjunLim/qa-automation-assignment/actions/workflows/problem2-tests.yml)
 
 문제2(B마트 재고 API)의 TC-01~TC-25는 GitHub Actions로 매 push마다 실제 실행됩니다. 위 배지를 클릭하면 최신 실행 결과(로그 포함)를 바로 확인할 수 있습니다.
 
