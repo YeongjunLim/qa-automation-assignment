@@ -38,7 +38,7 @@ jobs:
       # 이 커밋 자체가 다시 워크플로우를 트리거하지 않도록 커밋 메시지에 [skip ci]를 명시한다
       # (path-filter negation은 워크플로우 파일을 수정하는 커밋 자체를 걸러버리는 부작용이 있어 제외함).
       - name: Commit test report for GitHub Pages
-        if: always() && github.event_name == 'push'
+        if: always() && github.event_name != 'pull_request'
         working-directory: .
         run: |
           git config user.name "github-actions[bot]"
