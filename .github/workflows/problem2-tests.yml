@@ -5,12 +5,10 @@ on:
     branches: [main]
     paths:
       - "problem2-bmart-stock-api/**"
-      - "!problem2-bmart-stock-api/test-report.html"
       - ".github/workflows/problem2-tests.yml"
   pull_request:
     paths:
       - "problem2-bmart-stock-api/**"
-      - "!problem2-bmart-stock-api/test-report.html"
       - ".github/workflows/problem2-tests.yml"
   workflow_dispatch:
 
@@ -37,7 +35,8 @@ jobs:
         run: pytest tests/ -v --html=test-report.html --self-contained-html
 
       # GitHub Pages(main 브랜치 정적 서빙)로 바로 열어볼 수 있도록 리포트를 커밋한다.
-      # 이 커밋 자체가 다시 워크플로우를 트리거하지 않도록 [skip ci] + path-filter 제외를 함께 건다.
+      # 이 커밋 자체가 다시 워크플로우를 트리거하지 않도록 커밋 메시지에 [skip ci]를 명시한다
+      # (path-filter negation은 워크플로우 파일을 수정하는 커밋 자체를 걸러버리는 부작용이 있어 제외함).
       - name: Commit test report for GitHub Pages
         if: always() && github.event_name == 'push'
         working-directory: .
