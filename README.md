@@ -4,6 +4,8 @@
 
 문제2(B마트 재고 API)의 TC-01~TC-25는 GitHub Actions로 매 push마다 실제 실행됩니다. 위 배지를 클릭하면 최신 실행 결과(로그 포함)를 바로 확인할 수 있습니다.
 
+**[TestLedger 목업 바로 보기](https://YeongjunLim.github.io/qa-automation-assignment/problem4-ai-qa-tool/prototype/testledger.html)** — 문제4(테스트케이스 자산화 플랫폼) 프로토타입을 GitHub Pages로 바로 열어볼 수 있습니다.
+
 ## 폴더 구조
 
 ```

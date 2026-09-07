@@ -1,5 +1,7 @@
 # 문제4. AI 생성 코드 검증 자동화 — 제안: TestLedger (테스트케이스 자산화 플랫폼)
 
+**[TestLedger 목업 바로 보기](https://YeongjunLim.github.io/qa-automation-assignment/problem4-ai-qa-tool/prototype/testledger.html)** (GitHub Pages)
+
 ## 핵심 아이디어를 한 줄로
 
 **테스트케이스를 "누군가 짜고 방치되는 파일"이 아니라, 서비스별로 등록·설계·실행·수정까지 이어지는 조직의 관리 자산으로 다루는 AI 보조 플랫폼.**
