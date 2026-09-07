@@ -69,11 +69,11 @@ tests/
 
 이를 검증하기 위해 3개의 상호 보완적인 테스트를 작성했다.
 
-1. **`test_two_near_simultaneous_orders_on_last_unit_only_one_succeeds`**
+1. **`test_tc23_concurrent_orders_on_last_unit`**
    `threading.Barrier(2)`로 두 스레드를 동시에 출발시켜 실제 고객 A/B가 거의 동시에 결제하는 상황을 재현. 실제 도달 간격을 로그로 남기되(환경마다 달라질 수 있어 하드 어서션은 하지 않음), "정확히 1건 성공 + 1건 품절"이라는 비즈니스 불변식만 엄격히 검증한다.
-2. **`test_lock_serializes_requests_even_under_artificial_delay`**
+2. **`test_tc24_lock_serializes_under_artificial_delay`**
    Barrier만으로는 두 요청이 서버의 critical section 안에서 실제로 겹친다는 보장이 없다(스케줄링이 빨라 우연히 순차 처리될 수 있음). 그래서 서버에 디버그용 `_artificialDelaySeconds` 파라미터를 훅으로 열어두고, lock 내부에서 강제로 지연시켜 두 요청이 **반드시** 경합하도록 만든 뒤에도 정합성이 깨지지 않는지 결정적으로 증명한다.
-3. **`test_no_oversell_under_high_concurrency`**
+3. **`test_tc25_no_oversell_under_high_concurrency`**
    2건이 아니라 10건을 동시에 쏘아도 성공은 정확히 1건이어야 함을 검증해, 동시성 정도가 늘어나도 락이 견고한지 추가로 보증한다.
 
 > 왜 타이밍을 하드 어서션하지 않았는가: "정확히 수십 ms 간격"을 CI 환경에서 강제로 재현/검증하려 하면 그 자체가 새로운 flaky 원인이 된다. 대신 (1) 실제 근접 타이밍 재현 + 로그 기록, (2) 인위적 지연으로 경합을 강제해 결정적으로 검증, 두 가지를 분리해 "현실성"과 "재현 가능성"을 모두 확보했다.
