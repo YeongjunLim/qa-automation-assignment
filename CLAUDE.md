@@ -56,6 +56,11 @@
 - 문제4 프로토타입(`flaky_triage.py`, `testledger.html`)은 "테스트 스위트가 아니라 데모/목업"이라는 이유로 CI 스모크테스트 추가하지 않기로 사용자와 확정
 - 문제1(서술)·문제3(Kotlin/Android, 에뮬레이터 필요)은 CI 대상 아님
 - README 상단에 Actions 배지 추가 완료 (최상위 README.md, problem2 README.md)
+- **GitHub Pages 활성화됨** (Settings → Pages → Deploy from a branch → main / root, 사용자가 직접 설정) —
+  repo 정적 파일이 `https://YeongjunLim.github.io/qa-automation-assignment/...`로 바로 열림
+- `testledger.html`(문제4)과 `problem2-bmart-stock-api/test-report.html`(문제2, pytest-html로 CI가
+  자동 생성·커밋)을 Pages 링크로 README 상단에 노출. test-report.html은 워크플로우가 매 push마다
+  갱신 후 `[skip ci]`로 자기 자신을 재트리거하지 않게 커밋함 (`.github/workflows/problem2-tests.yml`)
 
 ## 파일 구조 참고
 ```

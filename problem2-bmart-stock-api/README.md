@@ -2,6 +2,8 @@
 
 [![Problem2 Tests](https://github.com/YeongjunLim/qa-automation-assignment/actions/workflows/problem2-tests.yml/badge.svg)](https://github.com/YeongjunLim/qa-automation-assignment/actions/workflows/problem2-tests.yml)
 
+**[테스트 결과 리포트 바로 보기](https://YeongjunLim.github.io/qa-automation-assignment/problem2-bmart-stock-api/test-report.html)** (GitHub Pages, 매 push마다 CI가 자동 갱신)
+
 ## 실행 방법
 
 ```bash

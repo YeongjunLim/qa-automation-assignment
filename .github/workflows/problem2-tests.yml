@@ -5,12 +5,17 @@ on:
     branches: [main]
     paths:
       - "problem2-bmart-stock-api/**"
+      - "!problem2-bmart-stock-api/test-report.html"
       - ".github/workflows/problem2-tests.yml"
   pull_request:
     paths:
       - "problem2-bmart-stock-api/**"
+      - "!problem2-bmart-stock-api/test-report.html"
       - ".github/workflows/problem2-tests.yml"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   test:
@@ -28,5 +33,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run tests (TC-01~TC-25)
-        run: pytest tests/ -v
+      - name: Run tests (TC-01~TC-25) and generate HTML report
+        run: pytest tests/ -v --html=test-report.html --self-contained-html
+
+      # GitHub Pages(main 브랜치 정적 서빙)로 바로 열어볼 수 있도록 리포트를 커밋한다.
+      # 이 커밋 자체가 다시 워크플로우를 트리거하지 않도록 [skip ci] + path-filter 제외를 함께 건다.
+      - name: Commit test report for GitHub Pages
+        if: always() && github.event_name == 'push'
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add problem2-bmart-stock-api/test-report.html
+          git diff --staged --quiet || git commit -m "chore: 테스트 결과 리포트 갱신 [skip ci]"
+          git push

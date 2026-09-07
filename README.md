@@ -2,7 +2,9 @@
 
 [![Problem2 Tests](https://github.com/YeongjunLim/qa-automation-assignment/actions/workflows/problem2-tests.yml/badge.svg)](https://github.com/YeongjunLim/qa-automation-assignment/actions/workflows/problem2-tests.yml)
 
-문제2(B마트 재고 API)의 TC-01~TC-25는 GitHub Actions로 매 push마다 실제 실행됩니다. 위 배지를 클릭하면 최신 실행 결과(로그 포함)를 바로 확인할 수 있습니다.
+문제2(B마트 재고 API)의 TC-01~TC-25는 GitHub Actions로 매 push마다 실제 실행됩니다. 위 배지를 클릭하면 CI 로그를, 아래 링크를 클릭하면 보기 편한 테스트 결과 리포트를 바로 확인할 수 있습니다.
+
+**[Problem2 테스트 결과 리포트 바로 보기](https://YeongjunLim.github.io/qa-automation-assignment/problem2-bmart-stock-api/test-report.html)** — 매 push마다 CI가 자동 갱신합니다.
 
 **[TestLedger 목업 바로 보기](https://YeongjunLim.github.io/qa-automation-assignment/problem4-ai-qa-tool/prototype/testledger.html)** — 문제4(테스트케이스 자산화 플랫폼) 프로토타입을 GitHub Pages로 바로 열어볼 수 있습니다.
 
